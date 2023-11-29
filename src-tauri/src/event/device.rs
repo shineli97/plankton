@@ -56,8 +56,3 @@ pub fn window_enent(app: &mut tauri::App) {
         }
     });
 }
-
-pub fn run() {
-    let copy = vec![Keycode::C, Keycode::LControl];
-    let _copy: JoinHandle<()> = execute(copy, || println!("回调"));
-}

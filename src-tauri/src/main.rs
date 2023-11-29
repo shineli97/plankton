@@ -2,18 +2,16 @@
  * @Author: shineli shineli97@163.com
  * @Date: 2023-11-24 14:57:58
  * @LastEditors: shineli
- * @LastEditTime: 2023-11-28 10:11:41
- * @Description: file content
+ * @LastEditTime: 2023-11-29 12:04:19
+ * @Description: 骗自己可以，骗兄弟也可以，但是不能骗爷爷。爷爷年纪大了，记性也不好了，记不得那么多东西，前面忘了，中间忘了，后面也忘了，但是还是不能骗爷爷
  */
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod api;
 mod event;
 mod system;
-use std::thread::JoinHandle;
-
-use device_query::Keycode;
+use api::clip;
 use event::device;
-// use event::device;
 use system::tray_menu;
 use tauri::Manager;
 use tokio::sync::mpsc;
@@ -24,7 +22,12 @@ fn main() {
     let (async_proc_output_tx, mut async_proc_output_rx) = mpsc::channel(1);
 
     let _app = tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            clip::copy,
+            clip::delete,
+            clip::get_all,
+            clip::get_one
+        ])
         .setup(|app: &mut tauri::App| {
             tauri::async_runtime::spawn(async move {
                 async_process_model(async_proc_input_rx, async_proc_output_tx).await
@@ -38,8 +41,9 @@ fn main() {
                     }
                 }
             });
-           
+
             device::window_enent(app);
+            clip::run();
 
             Ok(())
         })
@@ -68,11 +72,3 @@ fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
         .emit_all("rs2js", format!("rs: {}", message))
         .unwrap();
 }
-
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-// 骗自己可以，骗兄弟也可以，但是不能骗爷爷。爷爷年纪大了，记性也不好了，记不得那么多东西，前面忘了，中间忘了，后面也忘了，但是还是不能骗爷爷
