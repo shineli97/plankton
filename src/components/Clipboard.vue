@@ -2,7 +2,7 @@
  * @Author: shineli shineli97@163.com
  * @Date: 2023-11-28 10:40:37
  * @LastEditors: shineli
- * @LastEditTime: 2023-11-29 12:08:23
+ * @LastEditTime: 2023-11-29 14:54:43
  * @Description: file content
 -->
 <template>
@@ -15,7 +15,7 @@
             ><DeleteOutlined
           /></a>
         </template>
-        <div>{{ item.data }}</div>
+        <div style="word-break: break-all;">{{ item.data }}</div>
       </a-list-item>
     </template>
     <template #header>
