@@ -2,7 +2,7 @@
  * @Author: shineli shineli97@163.com
  * @Date: 2023-11-28 10:33:38
  * @LastEditors: shineli
- * @LastEditTime: 2023-11-29 14:21:23
+ * @LastEditTime: 2023-11-30 14:41:41
  * @Description: file content
  */
 extern crate clipboard;
@@ -23,33 +23,34 @@ pub fn run() {
     spawn(move || {
         let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
         let conn = Connection::open(DB).unwrap();
+        let get_data_sql = "SELECT data FROM history order by time desc limit 1";
         let _ = conn.execute(
-            "CREATE TABLE history (id INTEGER primary key,  data  TEXT)",
+            "CREATE TABLE history (
+                    id INTEGER primary key, 
+                    data TEXT, 
+                    time TIMESTAMP DEFAULT (datetime(CURRENT_TIMESTAMP,'localtime'))
+                )",
             (),
         );
-        let mut last_conent = String::new();
-
-        let mut stmt = conn
-            .prepare("SELECT data FROM history order by id desc limit 1")
-            .unwrap();
-        let mut row = stmt.query([]).unwrap();
-        while let Some(row) = row.next().unwrap() {
-            last_conent = row.get(0).unwrap();
-        }
-
+        let mut stmt = conn.prepare(get_data_sql).unwrap();
+        let mut last_content = String::new();
         loop {
+            let res = stmt.query_row([], |row| Ok(row.get(0).expect("没数据")));
+            match res {
+                Ok(val) => last_content = val,
+                Err(err) => println!("get data error:{}", err),
+            }
             let content = ctx.get_contents();
             match content {
                 Ok(value) => {
-                    if value.is_empty() || value.eq(&last_conent) {
+                    if value.is_empty() || value.eq(&last_content) {
                         sleep(Duration::from_millis(1000));
                         continue;
                     }
-                    last_conent = value.clone();
-                    let _ = conn.execute("INSERT INTO history (data) VALUES (?1)", [&last_conent]);
+                    let _ = conn.execute("INSERT INTO history (data) VALUES (?1)", [value]);
                 }
                 Err(err) => {
-                    println!("{}", err);
+                    println!("insert data error:{}", err);
                 }
             };
             sleep(Duration::from_millis(1000));
@@ -72,13 +73,14 @@ pub fn get_all() -> Vec<History> {
     let conn = Connection::open(DB).unwrap();
     let mut res = Vec::new();
     let mut stmt = conn
-        .prepare("SELECT id, data FROM history order by id desc ")
+        .prepare("SELECT id, data, time FROM history order by time desc ")
         .unwrap();
     let rows = stmt
         .query_map([], |row| {
             Ok(History {
                 id: row.get(0).unwrap(),
                 data: row.get(1).unwrap(),
+                time: row.get(2).unwrap(),
             })
         })
         .unwrap();
@@ -90,11 +92,18 @@ pub fn get_all() -> Vec<History> {
 }
 
 #[tauri::command]
-pub fn copy(value: &str) -> &str {
+pub fn copy(id: usize, data: &str) -> &str {
     let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-    let r = ctx.set_contents(value.to_string());
+    let r = ctx.set_contents(data.to_string());
     match r {
-        Ok(_) => "success",
+        Ok(_) => {
+            let conn = Connection::open(DB).unwrap();
+            let _ = conn.execute(
+                "UPDATE history SET time = (datetime(CURRENT_TIMESTAMP,'localtime')) WHERE id = ?1",
+                [id],
+            );
+            "success"
+        }
         Err(_) => "error",
     }
 }
@@ -110,14 +119,15 @@ pub fn delete(id: usize) -> usize {
 pub struct History {
     id: i32,
     data: String,
+    time: String,
 }
 
 #[cfg(test)]
 mod tests {
-    use snowflake::ProcessUniqueId;
+    use std::time::SystemTime;
 
     #[test]
     fn test() {
-        println!("{}", ProcessUniqueId::new().to_string());
+        println!("{:?}", SystemTime::now());
     }
 }

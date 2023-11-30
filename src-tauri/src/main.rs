@@ -2,7 +2,7 @@
  * @Author: shineli shineli97@163.com
  * @Date: 2023-11-24 14:57:58
  * @LastEditors: shineli
- * @LastEditTime: 2023-11-29 12:04:19
+ * @LastEditTime: 2023-11-29 15:07:09
  * @Description: 骗自己可以，骗兄弟也可以，但是不能骗爷爷。爷爷年纪大了，记性也不好了，记不得那么多东西，前面忘了，中间忘了，后面也忘了，但是还是不能骗爷爷
  */
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
@@ -12,7 +12,7 @@ mod event;
 mod system;
 use api::clip;
 use event::device;
-use system::tray_menu;
+use system::{tray_menu, app_menu};
 use tauri::Manager;
 use tokio::sync::mpsc;
 
@@ -49,8 +49,8 @@ fn main() {
         })
         .system_tray(tray_menu::menu())
         .on_system_tray_event(tray_menu::handler)
-        // .menu(app_menu::init(&context))
-        // .on_menu_event(app_menu::handler)
+        .menu(app_menu::init(&context))
+        .on_menu_event(app_menu::handler)
         .run(context)
         .expect("error while running tauri application");
 }
