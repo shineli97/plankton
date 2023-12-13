@@ -1,3 +1,10 @@
+/*
+ * @Author: shineli shineli97@163.com
+ * @Date: 2023-11-27 16:39:37
+ * @LastEditors: shineli
+ * @LastEditTime: 2023-12-01 20:20:33
+ * @Description: file content
+ */
 use tauri::{
     SystemTray,
     SystemTrayMenu,
@@ -7,6 +14,7 @@ use tauri::{
     SystemTrayEvent,
     Manager,
 };
+use window_shadows::set_shadow;
 
 // 构建托盘菜单
 pub fn menu() -> SystemTray {
@@ -23,6 +31,7 @@ pub fn menu() -> SystemTray {
 pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
     // 获取应用窗口
     let window = app.get_window("main").unwrap();
+    set_shadow(&window, true).expect("Unsupported platform!");
     let _parent_window = Some(&window);
 
     match event {

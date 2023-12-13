@@ -2,7 +2,7 @@
  * @Author: shineli shineli97@163.com
  * @Date: 2023-11-28 10:40:37
  * @LastEditors: shineli
- * @LastEditTime: 2023-11-30 16:07:22
+ * @LastEditTime: 2023-12-13 20:29:40
  * @Description: file content
 -->
 <template>
@@ -28,11 +28,12 @@
   </a-list>
 </template>
 
-<script setup>
+<script setup name="Clipboard">
 import { ref, watchEffect } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { CopyOutlined, DeleteOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
+import { readText } from "@tauri-apps/api/clipboard";
 
 const timer = ref("");
 const dataList = ref([]);
@@ -50,11 +51,9 @@ watchEffect(() => {
 
 const formatTime = (time) => {
   let diff = new Date().getTime() - new Date(time).getTime();
-
   let min = Math.floor(diff / (60 * 1000));
-
   if (min < 60) {
-    return `${min} 分钟前`;
+    return `${min < 1 ? "刚刚" : min + "分钟前"}`;
   }
   let hour = Math.floor(min / 60);
   if (hour < 24) {
@@ -65,7 +64,7 @@ const formatTime = (time) => {
 };
 
 async function getData() {
-  data.value = await invoke("get_one");
+  data.value = await readText();
 }
 
 async function getDataList() {

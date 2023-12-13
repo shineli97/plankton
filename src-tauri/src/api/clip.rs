@@ -2,7 +2,7 @@
  * @Author: shineli shineli97@163.com
  * @Date: 2023-11-28 10:33:38
  * @LastEditors: shineli
- * @LastEditTime: 2023-11-30 14:41:41
+ * @LastEditTime: 2023-12-13 10:46:54
  * @Description: file content
  */
 extern crate clipboard;
@@ -59,16 +59,6 @@ pub fn run() {
 }
 
 #[tauri::command]
-pub fn get_one() -> String {
-    let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-    let content = ctx.get_contents();
-    match content {
-        Ok(value) => value,
-        Err(_) => String::new(),
-    }
-}
-
-#[tauri::command]
 pub fn get_all() -> Vec<History> {
     let conn = Connection::open(DB).unwrap();
     let mut res = Vec::new();
@@ -120,14 +110,4 @@ pub struct History {
     id: i32,
     data: String,
     time: String,
-}
-
-#[cfg(test)]
-mod tests {
-    use std::time::SystemTime;
-
-    #[test]
-    fn test() {
-        println!("{:?}", SystemTime::now());
-    }
 }

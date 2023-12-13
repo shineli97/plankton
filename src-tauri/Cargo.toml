@@ -13,7 +13,12 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = ["system-tray", "shell-open"] }
+tauri = { version = "1.5", features = [
+    "clipboard-read-text",
+    "window-set-size",
+    "system-tray",
+    "shell-open",
+] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 # 监听和发送事件的键盘和鼠标
@@ -25,6 +30,9 @@ clipboard = "0.5"
 libsqlite3-sys = { version = "0.27.0", features = ["bundled"] }
 rusqlite = { version = "0.30.0", features = ["bundled"] }
 tokio = "1.33"
+window-shadows = "0.2.1"
+everything-rs = "0.1.9"
+chrono="0.4.31"
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

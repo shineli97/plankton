@@ -2,7 +2,7 @@
  * @Author: shineli shineli97@163.com
  * @Date: 2023-11-24 14:57:58
  * @LastEditors: shineli
- * @LastEditTime: 2023-11-29 15:07:09
+ * @LastEditTime: 2023-12-13 20:00:13
  * @Description: 骗自己可以，骗兄弟也可以，但是不能骗爷爷。爷爷年纪大了，记性也不好了，记不得那么多东西，前面忘了，中间忘了，后面也忘了，但是还是不能骗爷爷
  */
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
@@ -10,23 +10,24 @@
 mod api;
 mod event;
 mod system;
-use api::clip;
+use api::{clip, everything};
 use event::device;
-use system::{tray_menu, app_menu};
+use system::{app_menu, tray_menu};
 use tauri::Manager;
 use tokio::sync::mpsc;
 
 fn main() {
+    everything::start();
     let context = tauri::generate_context!();
-    let (async_proc_input_tx, async_proc_input_rx) = mpsc::channel(1);
+    let (_async_proc_input_tx, async_proc_input_rx) = mpsc::channel(1);
     let (async_proc_output_tx, mut async_proc_output_rx) = mpsc::channel(1);
-
     let _app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             clip::copy,
             clip::delete,
             clip::get_all,
-            clip::get_one
+            everything::search,
+            everything::open
         ])
         .setup(|app: &mut tauri::App| {
             tauri::async_runtime::spawn(async move {
@@ -49,10 +50,11 @@ fn main() {
         })
         .system_tray(tray_menu::menu())
         .on_system_tray_event(tray_menu::handler)
-        .menu(app_menu::init(&context))
-        .on_menu_event(app_menu::handler)
+        // .menu(app_menu::init(&context))
+        // .on_menu_event(app_menu::handler)
         .run(context)
         .expect("error while running tauri application");
+    everything::close();
 }
 
 async fn async_process_model(
